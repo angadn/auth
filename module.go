@@ -15,3 +15,13 @@ var Module = fx.Options(
 		WithGroupRepository,
 	),
 )
+
+// AWSCognitoModule is an fx.Options that sets up our AWS Cognito RBAC.
+var AWSCognitoModule = fx.Options(
+	fx.Provide(
+		NewAWSCognitoRBAC,
+	),
+	fx.Invoke(
+		WithRBAC,
+	),
+)
