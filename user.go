@@ -14,3 +14,19 @@ type User interface {
 	Secret() string
 	IsVerified() bool
 }
+
+// RBACUser provides stubs for User#Secret and User#IsVerified as RBAC-implementations
+// often do not maintain these values as part of their business logic, but instead
+// delegate it to their RBAC system.
+type RBACUser struct {
+}
+
+// Secret stubs User#Secret.
+func (user RBACUser) Secret() (secret string) {
+	panic("RBACUser#Secret is unimplemented")
+}
+
+// IsVerified stubs User#IsVerified.
+func (user RBACUser) IsVerified() (ok bool) {
+	panic("RBACUser#IsVerifiedis unimplemented")
+}
