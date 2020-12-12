@@ -98,7 +98,7 @@ func (session *baseSession) auth(id string, secret string, opts ...Option) (
 		return
 	}
 
-	if !isRBACSet && user.Secret() != secret {
+	if !isRBACSet && user.GetSecret() != secret {
 		err = ErrInvalidUserCredentials
 		return
 	}
@@ -109,7 +109,7 @@ func (session *baseSession) auth(id string, secret string, opts ...Option) (
 		}
 	}
 
-	if !user.IsVerified() {
+	if !user.GetIsVerified() {
 		err = ErrUserNotVerified
 		return
 	}

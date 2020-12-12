@@ -18,14 +18,14 @@ type userImpl struct {
 	secret string
 }
 
-func (m userImpl) ID() string {
+func (m userImpl) GetID() string {
 	return m.id
 }
 
-func (m userImpl) Secret() string {
+func (m userImpl) GetSecret() string {
 	return m.secret
 }
 
-func (m userImpl) IsVerified() bool {
+func (m userImpl) GetIsVerified() bool {
 	return true
 }

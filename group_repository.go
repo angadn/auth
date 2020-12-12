@@ -62,7 +62,7 @@ func (repo *GroupMySQLRepository) Add(
 		string(kind),
 		string(id),
 		string(role.Name),
-		user.ID(),
+		user.GetID(),
 	)
 
 	return
@@ -83,7 +83,7 @@ func (repo *GroupMySQLRepository) Delete(
 		string(kind),
 		string(id),
 		string(role.Name),
-		user.ID(),
+		user.GetID(),
 	)
 
 	return
@@ -165,7 +165,7 @@ func (repo *GroupMySQLRepository) Belongs(ctx context.Context, roles Roles) (
 		return
 	}
 
-	if user.ID() == master.ID() && user.Secret() == master.Secret() {
+	if user.GetID() == master.GetID() && user.GetSecret() == master.GetSecret() {
 		found = true
 		return
 	}
@@ -182,7 +182,7 @@ func (repo *GroupMySQLRepository) Belongs(ctx context.Context, roles Roles) (
 			string(kind),
 			string(id),
 			string(r.Name),
-			user.ID(),
+			user.GetID(),
 		)
 	}
 
@@ -210,7 +210,7 @@ func (repo *GroupMySQLRepository) Resources(
 		"SELECT %s FROM `groups` WHERE `groups`.`resource_kind` = ? AND `groups`.`user_id` = ?",
 	),
 		string(kind),
-		user.ID(),
+		user.GetID(),
 	); err != nil {
 		return
 	}

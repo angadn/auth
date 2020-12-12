@@ -10,9 +10,9 @@ var (
 
 // User is a generic type that requires your application-level Users to implement certain
 type User interface {
-	ID() string
-	Secret() string
-	IsVerified() bool
+	GetID() string
+	GetSecret() string
+	GetIsVerified() bool
 }
 
 // RBACUser provides stubs for User#Secret and User#IsVerified as RBAC-implementations

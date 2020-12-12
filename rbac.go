@@ -70,17 +70,17 @@ type awsUser struct {
 	isVerified bool
 }
 
-func (user *awsUser) ID() (id string) {
+func (user *awsUser) GetID() (id string) {
 	id = user.id
 	return
 }
 
-func (user *awsUser) Secret() (secret string) {
+func (user *awsUser) GetSecret() (secret string) {
 	secret = user.secret
 	return
 }
 
-func (user *awsUser) IsVerified() (ok bool) {
+func (user *awsUser) GetIsVerified() (ok bool) {
 	ok = user.isVerified
 	return
 }
