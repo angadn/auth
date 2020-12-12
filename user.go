@@ -21,12 +21,12 @@ type User interface {
 type RBACUser struct {
 }
 
-// Secret stubs User#Secret.
-func (user RBACUser) Secret() (secret string) {
-	panic("RBACUser#Secret is unimplemented")
+// GetSecret stubs User#Secret.
+func (user RBACUser) GetSecret() (secret string) {
+	panic("RBACUser#GetSecret is unimplemented")
 }
 
-// IsVerified stubs User#IsVerified.
-func (user RBACUser) IsVerified() (ok bool) {
-	panic("RBACUser#IsVerifiedis unimplemented")
+// GetIsVerified stubs User#GetIsVerified.
+func (user RBACUser) GetIsVerified() (ok bool) {
+	panic("RBACUser#GetIsVerified is unimplemented")
 }
