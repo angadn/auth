@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"fmt"
-	"log"
 )
 
 // Option to configure different behaviour for Session#Auth.
@@ -25,12 +24,21 @@ const (
 var (
 	repo      Repository
 	isRepoSet bool
+
+	rbac      RBAC
+	isRBACSet bool
 )
 
-// WithRepository configures the UserRepository implementation that `auth` will refer.
+// WithRepository configures the User Repository implementation that `auth` will refer.
 func WithRepository(r Repository) {
 	repo = r
 	isRepoSet = true
+}
+
+// WithRBAC configures the RBAC implementation that `auth` will refer.
+func WithRBAC(r RBAC) {
+	rbac = r
+	isRBACSet = true
 }
 
 // Session for an authenticated User.
@@ -43,7 +51,9 @@ var (
 	// ErrMissingUserCredentials when auth information isn't present in message.
 	ErrMissingUserCredentials = fmt.Errorf("missing user credentials")
 
-	// ErrInvalidUserCredentials when ID, Secret doesn't match that in the database.
+	// ErrInvalidUserCredentials when ID, Secret doesn't match that in the database. We
+	// use this generic error by design so as to thwart malicious requests intended to
+	// list user IDs by brute-force.
 	ErrInvalidUserCredentials = fmt.Errorf("invalid user credentials")
 
 	// ErrUserNotVerified when user hasn't verified email ID, phone, etc.
@@ -68,15 +78,27 @@ func (session *baseSession) auth(id string, secret string, opts ...Option) (
 		user User
 	)
 
+	if isRBACSet {
+		if user, ok, err = rbac.Authenticate(
+			ctx,
+			id,
+			secret,
+		); err != nil {
+			return
+		} else if !ok {
+			err = ErrInvalidUserCredentials
+			return
+		}
+	}
+
 	if user, ok, err = repo.FindAuthUser(session.ctx, id); err != nil {
 		return
 	} else if !ok {
-		err = ErrInvalidUserCredentials // Don't reveal if a user exists or not
+		err = ErrInvalidUserCredentials
 		return
 	}
 
-	if user.Secret() != secret {
-		log.Printf("failed here 2929\nuser.Secret() = %s\nsecret = %s\n", user.Secret(), secret)
+	if !isRBACSet && user.Secret() != secret {
 		err = ErrInvalidUserCredentials
 		return
 	}
