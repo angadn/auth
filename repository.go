@@ -1,6 +1,8 @@
 package auth
 
-import "context"
+import (
+	"context"
+)
 
 // Repository is the interface for your application's repository to implement.
 type Repository interface {
