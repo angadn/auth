@@ -13,20 +13,39 @@ import (
 var Groups GroupRepository
 
 // WithGroupRepository configures the GroupRepository implementation that `auth` will refer.
-func WithGroupRepository(r GroupRepository) {
-	Groups = r
+func WithGroupRepository(r GroupRepositoryImpl) {
+	Groups.GroupRepositoryImpl = r
 }
 
-// GroupRepository defines an interface with which we can persist our Groups.
-type GroupRepository interface {
+// GroupRepositoryImpl defines an interface with which we can persist our Groups.
+type GroupRepositoryImpl interface {
 	Add(ctx context.Context, user User, role Role) (err error)
 	Delete(ctx context.Context, user User, role Role) (err error)
 	Find(ctx context.Context, role Role) (group Group, err error)
 	Free(ctx context.Context, resource Resource) (err error)
-	Belongs(ctx context.Context, roles Roles) (found bool, err error)
+	IsUserInAny(ctx context.Context, user User, roles Roles) (ok bool, err error)
 	Resources(ctx context.Context, kind ResourceKind, user User) (
 		roles Roles, err error,
 	)
+}
+
+// GroupRepository persists our Groups using an underlying GroupRepositoryImpl.
+type GroupRepository struct {
+	GroupRepositoryImpl
+}
+
+// IsInAny is a convenience-method that calls `IsUserInAny` with the User in the current
+// Context.
+func (repo GroupRepository) IsInAny(ctx context.Context, roles Roles) (
+	ok bool, err error,
+) {
+	var user User
+	if user, err = FromContext(ctx); err != nil {
+		return
+	}
+
+	ok, err = repo.IsUserInAny(ctx, user, roles)
+	return
 }
 
 // GroupMySQLRepository implements GroupRepository in MySQL.
@@ -34,8 +53,8 @@ type GroupMySQLRepository struct {
 	db *sql.DB
 }
 
-// NewGroupMySQLRepository is a constructor for GroupMySQLRepository.
-func NewGroupMySQLRepository(db *sql.DB) (repo GroupRepository, err error) {
+// NewGroupMySQLRepositoryImpl is a constructor for GroupMySQLRepository.
+func NewGroupMySQLRepositoryImpl(db *sql.DB) (repo GroupRepositoryImpl, err error) {
 	ret := new(GroupMySQLRepository)
 	ret.db = db
 	repo = ret
@@ -155,18 +174,13 @@ func (repo *GroupMySQLRepository) Find(ctx context.Context, role Role) (
 	return
 }
 
-// Belongs checks whether the given User has one or more of the given Roles. It's results
+// IsUserInAny checks whether the given User has one or more of the given Roles. It's results
 // can only be reliably consumed when `err` is `nil`.
-func (repo *GroupMySQLRepository) Belongs(ctx context.Context, roles Roles) (
-	found bool, err error,
+func (repo *GroupMySQLRepository) IsUserInAny(ctx context.Context, user User, roles Roles) (
+	ok bool, err error,
 ) {
-	var user User
-	if user, err = FromContext(ctx); err != nil {
-		return
-	}
-
 	if user.GetID() == master.GetID() && user.GetSecret() == master.GetSecret() {
-		found = true
+		ok = true
 		return
 	}
 
@@ -195,7 +209,7 @@ func (repo *GroupMySQLRepository) Belongs(ctx context.Context, roles Roles) (
 		strings.TrimRight(strings.Repeat(
 			"(`groups`.`resource_kind` = ? AND `groups`.`resource_id` = ? AND `groups`.`role_name` = ? AND `groups`.`user_id` = ?) OR", len(roles),
 		), " OR"),
-	), args...).Scan(&found)
+	), args...).Scan(&ok)
 
 	return
 }
