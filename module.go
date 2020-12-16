@@ -8,7 +8,7 @@ import (
 // and invoke (register) functions of the package
 var Module = fx.Options(
 	fx.Provide(
-		NewGroupMySQLRepository,
+		NewGroupMySQLRepositoryImpl,
 	),
 	fx.Invoke(
 		WithRepository,
