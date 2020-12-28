@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 
-	"github.com/angadn/config"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
@@ -22,20 +21,9 @@ type AWSCognitoRBAC struct {
 }
 
 // NewAWSCognitoRBAC is the provider for an AWS Cognito-backed Repository.
-func NewAWSCognitoRBAC(
-	ctx context.Context, cfg config.Source,
-) (rbac RBAC, err error) {
+func NewAWSCognitoRBAC(awsSession *session.Session) (rbac RBAC, err error) {
 	ret := new(AWSCognitoRBAC)
-
-	var region config.Value
-	if region, err = cfg.Get(ctx, config.Key("AWS_REGION")); err != nil {
-		return
-	}
-
-	ret.ses = session.New(&aws.Config{
-		Region: aws.String(string(region)),
-	})
-
+	ret.ses = awsSession
 	rbac = ret
 	return
 }
