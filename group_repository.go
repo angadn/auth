@@ -13,7 +13,7 @@ import (
 var Groups GroupRepository
 
 // WithGroupRepository configures the GroupRepository implementation that `auth` will refer.
-func WithGroupRepository(r GroupRepositoryImpl) {
+func WithGroupRepository(r GroupRepository) {
 	Groups.GroupRepositoryImpl = r
 }
 
