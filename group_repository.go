@@ -54,11 +54,11 @@ type GroupMySQLRepository struct {
 }
 
 // NewGroupMySQLRepositoryImpl is a constructor for GroupMySQLRepository.
-func NewGroupMySQLRepositoryImpl(db *sql.DB) (repo GroupRepositoryImpl, err error) {
-	ret := new(GroupMySQLRepository)
-	ret.db = db
-	repo = ret
-	err = ret.db.Ping()
+func NewGroupMySQLRepositoryImpl(db *sql.DB) (repo GroupRepository, err error) {
+	mysqlRepo := new(GroupMySQLRepository)
+	mysqlRepo.db = db
+	repo.GroupRepositoryImpl = mysqlRepo
+	err = mysqlRepo.db.Ping()
 	return
 }
 
