@@ -9,8 +9,15 @@ import (
 	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 )
 
-// AWSCognitoClientID is the name of an environment variable we use to configure Cognito.
-const AWSCognitoClientID = "AWS_COGNITO_CLIENT_ID"
+const (
+	// AWSCognitoClientID is the name of an environment variable we use to configure
+	// Cognito with an App Client.
+	AWSCognitoClientID = "AWS_COGNITO_CLIENT_ID"
+
+	// AWSCognitoClientSecret is the name of an environment variable we use to configure
+	// Cognito with an App Client.
+	AWSCognitoClientSecret = "AWS_COGNITO_CLIENT_SECRET"
+)
 
 // RBAC is an interface that any RBAC provider must implement.
 type RBAC interface {
@@ -41,8 +48,16 @@ func NewAWSCognitoRBAC(
 func (repo *AWSCognitoRBAC) Authenticate(
 	ctx context.Context, username, password string,
 ) (user User, ok bool, err error) {
-	var clientID config.Value
-	if clientID, err = repo.cfg.Get(ctx, config.Key(AWSCognitoClientID)); err != nil {
+	var clientID, clientSecret config.Value
+	if clientID, err = repo.cfg.Get(
+		ctx, config.Key(AWSCognitoClientID),
+	); err != nil {
+		return
+	}
+
+	if clientSecret, err = repo.cfg.Get(
+		ctx, config.Key(AWSCognitoClientSecret),
+	); err != nil {
 		return
 	}
 
@@ -51,8 +66,9 @@ func (repo *AWSCognitoRBAC) Authenticate(
 		ClientId: aws.String(string(clientID)),
 		AuthFlow: aws.String("USER_PASSWORD_AUTH"),
 		AuthParameters: map[string]*string{
-			"USERNAME": aws.String(username),
-			"PASSWORD": aws.String(password),
+			"USERNAME":    aws.String(username),
+			"PASSWORD":    aws.String(password),
+			"SECRET_HASH": aws.String(string(clientSecret)),
 		},
 	}); err != nil {
 		return
