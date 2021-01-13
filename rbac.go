@@ -2,6 +2,9 @@ package auth
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
 
 	"github.com/angadn/config"
 	"github.com/aws/aws-sdk-go/aws"
@@ -18,6 +21,13 @@ const (
 	// Cognito with an App Client.
 	AWSCognitoClientSecret = "AWS_COGNITO_CLIENT_SECRET"
 )
+
+func cognitoSecretHash(username, clientID, clientSecret string) string {
+	// From: https://stackoverflow.com/a/46163403/382564
+	mac := hmac.New(sha256.New, []byte(clientSecret))
+	mac.Write([]byte(username + clientID))
+	return base64.StdEncoding.EncodeToString(mac.Sum(nil))
+}
 
 // RBAC is an interface that any RBAC provider must implement.
 type RBAC interface {
