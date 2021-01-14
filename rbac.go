@@ -65,14 +65,14 @@ func (repo *AWSCognitoRBAC) Authenticate(
 		return
 	}
 
-	if clientSecret, err = repo.cfg.Get(
-		ctx, config.Key(AWSCognitoClientSecret),
+	if clientSecret, err = repo.cfg.GetDef(
+		ctx, config.Key(AWSCognitoClientSecret), "",
 	); err != nil {
 		return
 	}
 
 	var csHash *string
-	if len(clientSecret) > 0 {
+	if clientSecret != "" {
 		csHash = aws.String(cognitoSecretHash(
 			username, string(clientID), string(clientSecret),
 		))
