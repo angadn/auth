@@ -12,16 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 )
 
-const (
-	// AWSCognitoClientID is the name of an environment variable we use to configure
-	// Cognito with an App Client.
-	AWSCognitoClientID = "AWS_COGNITO_CLIENT_ID"
-
-	// AWSCognitoClientSecret is the name of an environment variable we use to configure
-	// Cognito with an App Client.
-	AWSCognitoClientSecret = "AWS_COGNITO_CLIENT_SECRET"
-)
-
 func cognitoSecretHash(username, clientID, clientSecret string) string {
 	// From: https://stackoverflow.com/a/46163403/382564
 	mac := hmac.New(sha256.New, []byte(clientSecret))
@@ -56,45 +46,22 @@ func NewAWSCognitoRBAC(
 
 // Authenticate implements Repository#Authenticate for AWS Cognito.
 func (repo *AWSCognitoRBAC) Authenticate(
-	ctx context.Context, username, password string,
+	ctx context.Context, username, accessToken string,
 ) (user User, ok bool, err error) {
-	var clientID, clientSecret config.Value
-	if clientID, err = repo.cfg.Get(
-		ctx, config.Key(AWSCognitoClientID),
+	var out *cognitoidentityprovider.GetUserOutput
+	if out, err = cognitoidentityprovider.New(repo.ses).GetUser(
+		&cognitoidentityprovider.GetUserInput{
+			AccessToken: aws.String(accessToken),
+		},
 	); err != nil {
 		return
 	}
 
-	if clientSecret, err = repo.cfg.GetDef(
-		ctx, config.Key(AWSCognitoClientSecret), "",
-	); err != nil {
-		return
-	}
+	ok = *out.Username == username
 
-	authParams := map[string]*string{
-		"USERNAME": aws.String(username),
-		"PASSWORD": aws.String(password),
-	}
-
-	if clientSecret != "" {
-		authParams["SECRET_HASH"] = aws.String(cognitoSecretHash(
-			username, string(clientID), string(clientSecret),
-		))
-	}
-
-	var cip = cognitoidentityprovider.New(repo.ses)
-	if _, err = cip.InitiateAuth(&cognitoidentityprovider.InitiateAuthInput{
-		ClientId:       aws.String(string(clientID)),
-		AuthFlow:       aws.String("USER_PASSWORD_AUTH"),
-		AuthParameters: authParams,
-	}); err != nil {
-		return
-	}
-
-	ok = true
 	user = &awsUser{
 		id:         username,
-		secret:     password,
+		secret:     accessToken,
 		isVerified: true,
 	}
 
