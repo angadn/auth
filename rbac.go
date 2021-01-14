@@ -55,9 +55,22 @@ func (repo *AWSCognitoRBAC) Authenticate(
 		},
 	); err != nil {
 		return
+	} else if out == nil {
+		err = ErrInvalidUserCredentials
+		return
 	}
 
-	ok = *out.Username == username
+	for _, kp := range out.UserAttributes {
+		if *kp.Name == "email" && *kp.Value == username {
+			ok = true
+			break
+		}
+	}
+
+	if !ok {
+		err = ErrInvalidUserCredentials
+		return
+	}
 
 	user = &awsUser{
 		id:         username,
