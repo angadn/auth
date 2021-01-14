@@ -6,10 +6,8 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 
-	"github.com/angadn/config"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
 )
 
 func cognitoSecretHash(username, clientID, clientSecret string) string {
@@ -28,17 +26,14 @@ type RBAC interface {
 
 // AWSCognitoRBAC implements the RBAC interface for AWS Cognito.
 type AWSCognitoRBAC struct {
-	ses *session.Session
-	cfg config.Source
+	cfg aws.Config
 }
 
 // NewAWSCognitoRBAC is the provider for an AWS Cognito-backed Repository.
 func NewAWSCognitoRBAC(
-	cfg config.Source,
-	awsSession *session.Session,
+	cfg aws.Config,
 ) (rbac RBAC, err error) {
 	ret := new(AWSCognitoRBAC)
-	ret.ses = awsSession
 	ret.cfg = cfg
 	rbac = ret
 	return
@@ -49,7 +44,8 @@ func (repo *AWSCognitoRBAC) Authenticate(
 	ctx context.Context, username, accessToken string,
 ) (user User, ok bool, err error) {
 	var out *cognitoidentityprovider.GetUserOutput
-	if out, err = cognitoidentityprovider.New(repo.ses).GetUser(
+	if out, err = cognitoidentityprovider.NewFromConfig(repo.cfg).GetUser(
+		ctx,
 		&cognitoidentityprovider.GetUserInput{
 			AccessToken: aws.String(accessToken),
 		},
