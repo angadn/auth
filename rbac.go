@@ -71,9 +71,12 @@ func (repo *AWSCognitoRBAC) Authenticate(
 		return
 	}
 
-	csHash := cognitoSecretHash(
-		username, string(clientID), string(clientSecret),
-	)
+	var csHash *string
+	if len(clientSecret) > 0 {
+		csHash = aws.String(cognitoSecretHash(
+			username, string(clientID), string(clientSecret),
+		))
+	}
 
 	var cip = cognitoidentityprovider.New(repo.ses)
 	if _, err = cip.InitiateAuth(&cognitoidentityprovider.InitiateAuthInput{
@@ -82,7 +85,7 @@ func (repo *AWSCognitoRBAC) Authenticate(
 		AuthParameters: map[string]*string{
 			"USERNAME":    aws.String(username),
 			"PASSWORD":    aws.String(password),
-			"SECRET_HASH": aws.String(csHash),
+			"SECRET_HASH": csHash,
 		},
 	}); err != nil {
 		return
