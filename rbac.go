@@ -35,7 +35,7 @@ func (repo *AWSCognitoRBAC) Authenticate(
 ) (user User, ok bool, err error) {
 	var out *cognitoidentityprovider.GetUserOutput
 	if out, err = cognitoidentityprovider.NewFromConfig(repo.cfg).GetUser(
-		ctx,
+		context.TODO(),
 		&cognitoidentityprovider.GetUserInput{
 			AccessToken: aws.String(accessToken),
 		},
