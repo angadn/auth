@@ -23,10 +23,12 @@ type RBACUser struct {
 
 // GetSecret stubs User#Secret.
 func (user RBACUser) GetSecret() (secret string) {
-	panic("RBACUser#GetSecret is unimplemented")
+	secret = "RBACUser#GetSecret is unimplemented"
+	return
 }
 
 // GetIsVerified stubs User#GetIsVerified.
 func (user RBACUser) GetIsVerified() (ok bool) {
-	panic("RBACUser#GetIsVerified is unimplemented")
+	ok = true
+	return
 }
