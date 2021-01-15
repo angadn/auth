@@ -179,8 +179,7 @@ func (repo *GroupMySQLRepository) Find(ctx context.Context, role Role) (
 func (repo *GroupMySQLRepository) IsUserInAny(ctx context.Context, user User, roles Roles) (
 	ok bool, err error,
 ) {
-	if user.GetID() == master.GetID() && user.GetSecret() == master.GetSecret() {
-		ok = true
+	if ok = IsMaster(user.GetID(), user.GetSecret()); ok {
 		return
 	}
 

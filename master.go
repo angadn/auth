@@ -13,6 +13,19 @@ func ConfigMaster(id string, secret string) {
 	}
 }
 
+// IsMaster is a convenience-method to check whether the User is Master or not.
+func IsMaster(id, secret string) (ok bool) {
+	if ok = id == master.GetID(); !ok {
+		return
+	}
+
+	if ok = secret == master.GetSecret(); !ok {
+		return
+	}
+
+	return
+}
+
 type userImpl struct {
 	id     string
 	secret string
