@@ -80,7 +80,7 @@ func (session *baseSession) auth(id string, secret string, opts ...Option) (
 
 	if isRBACSet {
 		if ok = IsMaster(id, secret); ok {
-			ctx = context.WithValue(ctx, UserKey, userImpl{
+			ctx = context.WithValue(session.ctx, UserKey, userImpl{
 				id: id, secret: secret,
 			})
 
