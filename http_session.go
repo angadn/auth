@@ -17,6 +17,9 @@ type HTTPSession struct {
 const (
 	headerUserID     = "X-Auth-User-ID"
 	headerUserSecret = "X-Auth-Secret"
+
+	queryUserID     = "authUserID"
+	queryUserSecret = "authSecret"
 )
 
 // NewHTTPSession is a constructor for HTTPSession.
@@ -35,7 +38,16 @@ func NewHTTPSession(rw http.ResponseWriter, req *http.Request) (session *HTTPSes
 // Auth authenticates a Session based.
 func (session *HTTPSession) Auth() (ctx context.Context, err error) {
 	id := session.req.Header.Get(headerUserID)
+
+	if id == "" {
+		id = session.req.URL.Query().Get(queryUserID)
+	}
+
 	sec := session.req.Header.Get(headerUserSecret)
+
+	if sec == "" {
+		sec = session.req.URL.Query().Get(queryUserSecret)
+	}
 
 	ctx, err = session.auth(id, sec)
 	session.err = err
